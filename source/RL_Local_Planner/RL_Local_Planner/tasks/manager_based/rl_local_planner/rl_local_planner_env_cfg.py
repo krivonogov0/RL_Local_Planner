@@ -5,6 +5,10 @@
 
 import math
 
+import isaaclab.sim as sim_utils
+import isaaclab.terrains as terrain_gen
+import isaaclab.terrains.height_field as hf_gen
+import isaaclab_tasks.manager_based.navigation.mdp as mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -12,13 +16,73 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.terrains import FlatPatchSamplingCfg, TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
-
-import isaaclab_tasks.manager_based.navigation.mdp as mdp
-from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_cfg import AnymalCFlatEnvCfg
+from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_cfg import (
+    AnymalCFlatEnvCfg,
+)
 
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
+
+INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
+    size=(8.0, 8.0),
+    border_width=20.0,
+    num_rows=5,
+    num_cols=5,
+    horizontal_scale=0.1,
+    vertical_scale=0.005,
+    slope_threshold=0.75,
+    difficulty_range=(0.0, 1.0),
+    use_cache=False,
+    sub_terrains={
+        "medium_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
+            size=(5.0, 5.0),
+            horizontal_scale=0.1,
+            vertical_scale=0.005,
+            num_obstacles=20,
+            obstacle_width_range=(0.5, 1.5),
+            obstacle_height_range=(1.0, 1.0),
+            platform_width=2.0,
+            border_width=0.3,
+            obstacle_height_mode="fixed",
+            flat_patch_sampling={
+                "root_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=0.8, max_height_diff=0.05),
+                "target_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=0.5, max_height_diff=0.05),
+            },
+        ),
+        "less_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
+            size=(5.0, 5.0),
+            horizontal_scale=0.1,
+            vertical_scale=0.005,
+            num_obstacles=3,
+            obstacle_width_range=(1.5, 2.5),
+            obstacle_height_range=(1.0, 1.0),
+            platform_width=2.0,
+            border_width=0.3,
+            obstacle_height_mode="fixed",
+            flat_patch_sampling={
+                "root_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.8, max_height_diff=0.05),
+                "target_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.5, max_height_diff=0.05),
+            },
+        ),
+        "more_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
+            size=(5.0, 5.0),
+            horizontal_scale=0.1,
+            vertical_scale=0.005,
+            num_obstacles=50,
+            obstacle_width_range=(0.5, 0.8),
+            obstacle_height_range=(1.0, 1.0),
+            platform_width=2.0,
+            border_width=0.3,
+            obstacle_height_mode="fixed",
+            flat_patch_sampling={
+                "root_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.0, max_height_diff=0.05),
+                "target_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.0, max_height_diff=0.05),
+            },
+        ),
+    },
+)
 
 
 @configclass
@@ -134,6 +198,29 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
 
     def __post_init__(self):
         """Post initialization."""
+
+        self.scene.num_envs = 5
+        self.scene.env_spacing = 5
+
+        self.scene.terrain = TerrainImporterCfg(
+            prim_path="/World/ground",
+            terrain_type="generator",
+            terrain_generator=INDOOR_NAVIGATION_CFG,
+            max_init_terrain_level=INDOOR_NAVIGATION_CFG.num_rows - 1,
+            collision_group=-1,
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                friction_combine_mode="multiply",
+                restitution_combine_mode="multiply",
+                static_friction=1.0,
+                dynamic_friction=1.0,
+            ),
+            visual_material=sim_utils.MdlFileCfg(
+                mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
+                project_uvw=True,
+                texture_scale=(0.25, 0.25),
+            ),
+            debug_vis=True,
+        )
 
         self.sim.dt = LOW_LEVEL_ENV_CFG.sim.dt
         self.sim.render_interval = LOW_LEVEL_ENV_CFG.decimation
