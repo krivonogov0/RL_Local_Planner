@@ -16,6 +16,7 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.markers.config import CUBOID_MARKER_CFG
 from isaaclab.terrains import FlatPatchSamplingCfg, TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
@@ -47,8 +48,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
             border_width=0.3,
             obstacle_height_mode="fixed",
             flat_patch_sampling={
-                "root_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=0.8, max_height_diff=0.05),
-                "target_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=0.5, max_height_diff=0.05),
+                "target": FlatPatchSamplingCfg(num_patches=5, patch_radius=1.0, max_height_diff=0.05),
             },
         ),
         "less_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
@@ -62,8 +62,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
             border_width=0.3,
             obstacle_height_mode="fixed",
             flat_patch_sampling={
-                "root_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.8, max_height_diff=0.05),
-                "target_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.5, max_height_diff=0.05),
+                "target": FlatPatchSamplingCfg(num_patches=5, patch_radius=1.0, max_height_diff=0.05),
             },
         ),
         "more_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
@@ -77,8 +76,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
             border_width=0.3,
             obstacle_height_mode="fixed",
             flat_patch_sampling={
-                "root_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.0, max_height_diff=0.05),
-                "target_spawn": FlatPatchSamplingCfg(num_patches=1, patch_radius=1.0, max_height_diff=0.05),
+                "target": FlatPatchSamplingCfg(num_patches=5, patch_radius=1.0, max_height_diff=0.05),
             },
         ),
     },
@@ -162,12 +160,13 @@ class RewardsCfg:
 class CommandsCfg:
     """Command terms for the MDP."""
 
-    pose_command = mdp.UniformPose2dCommandCfg(
+    pose_command = mdp.TerrainBasedPose2dCommandCfg(
         asset_name="robot",
-        simple_heading=False,
+        simple_heading=True,
         resampling_time_range=(8.0, 8.0),
         debug_vis=True,
-        ranges=mdp.UniformPose2dCommandCfg.Ranges(pos_x=(-3.0, 3.0), pos_y=(-3.0, 3.0), heading=(-math.pi, math.pi)),
+        ranges=mdp.TerrainBasedPose2dCommandCfg.Ranges(heading=(-math.pi, math.pi)),
+        goal_pose_visualizer_cfg=CUBOID_MARKER_CFG.replace(prim_path="/Visuals/Command/pose_goal"),
     )
 
 
