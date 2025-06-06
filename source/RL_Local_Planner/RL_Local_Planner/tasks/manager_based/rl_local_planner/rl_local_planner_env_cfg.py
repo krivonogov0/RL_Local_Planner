@@ -17,12 +17,15 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.markers.config import CUBOID_MARKER_CFG
+from isaaclab.sensors import RayCasterCfg, patterns
 from isaaclab.terrains import FlatPatchSamplingCfg, TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_cfg import (
     AnymalCFlatEnvCfg,
 )
+
+USE_RERUN = True
 
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
 
@@ -240,6 +243,18 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
                 texture_scale=(0.25, 0.25),
             ),
             debug_vis=True,
+        )
+
+        self.scene.circle_scanner = RayCasterCfg(
+            prim_path="{ENV_REGEX_NS}/Robot/base",
+            offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 0.1)),
+            attach_yaw_only=True,
+            pattern_cfg=patterns.LidarPatternCfg(
+                channels=1, vertical_fov_range=(-1.0, 1.0), horizontal_fov_range=(-180.0, 180.0), horizontal_res=2.0
+            ),
+            debug_vis=True,
+            mesh_prim_paths=["/World/ground"],
+            max_distance=10.0,
         )
 
         self.sim.dt = LOW_LEVEL_ENV_CFG.sim.dt
