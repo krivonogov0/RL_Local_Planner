@@ -1,4 +1,3 @@
-import rerun as rr
 import RL_Local_Planner.tasks.manager_based.rl_local_planner.visualizers as rr_visualizers
 import torch
 from isaaclab.envs.manager_based_rl_env import ManagerBasedRLEnv
