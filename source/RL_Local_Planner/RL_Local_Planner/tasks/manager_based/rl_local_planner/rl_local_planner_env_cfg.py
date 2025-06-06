@@ -101,7 +101,7 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-3.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*THIGH"), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*THIGH"), "threshold": 1.0},
     )
 
 
@@ -184,12 +184,6 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
             debug_vis=True,
             mesh_prim_paths=["/World/ground"],
             max_distance=10.0,
-        )
-
-        self.scene.contact_sensor = ContactSensorCfg(
-            prim_path="{ENV_REGEX_NS}/Robot/.*",
-            track_air_time=True,
-            filter_prim_paths_expr=["/World/ground/terrain/mesh"],
         )
 
         self.sim.dt = LOW_LEVEL_ENV_CFG.sim.dt
