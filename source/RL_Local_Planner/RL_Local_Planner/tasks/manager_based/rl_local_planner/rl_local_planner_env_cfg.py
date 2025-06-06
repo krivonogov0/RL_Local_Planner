@@ -24,6 +24,8 @@ from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor
 
 USE_RERUN = True
 
+SUCCESS_DISTANCE = 0.5
+
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
 
 
@@ -126,6 +128,10 @@ class TerminationsCfg:
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="base"), "threshold": 1.0},
+    )
+    is_success = DoneTerm(
+        func=custom_mdp.is_success,
+        params={"command_name": "pose_command", "threshold": SUCCESS_DISTANCE},
     )
 
 
