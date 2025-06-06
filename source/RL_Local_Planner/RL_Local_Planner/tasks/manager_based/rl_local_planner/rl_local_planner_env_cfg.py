@@ -9,6 +9,7 @@ import isaaclab.sim as sim_utils
 import isaaclab.terrains as terrain_gen
 import isaaclab.terrains.height_field as hf_gen
 import isaaclab_tasks.manager_based.navigation.mdp as mdp
+import RL_Local_Planner.tasks.manager_based.rl_local_planner.mdp as custom_mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -153,6 +154,10 @@ class ObservationsCfg:
         base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
         projected_gravity = ObsTerm(func=mdp.projected_gravity)
         pose_command = ObsTerm(func=mdp.generated_commands, params={"command_name": "pose_command"})
+        circle_scanner = ObsTerm(
+            func=custom_mdp.circle_scanner_observation,
+            params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "use_rerun": USE_RERUN},
+        )
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()

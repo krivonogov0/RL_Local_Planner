@@ -1,0 +1,32 @@
+import rerun as rr
+import RL_Local_Planner.tasks.manager_based.rl_local_planner.visualizers as rr_visualizers
+import torch
+from isaaclab.envs.manager_based_rl_env import ManagerBasedRLEnv
+from isaaclab.managers.scene_entity_cfg import SceneEntityCfg
+from isaaclab.sensors import RayCasterCfg
+
+
+def circle_scanner_observation(
+    env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, use_rerun: bool = False
+) -> torch.Tensor:
+    """Computes distance observations from a circular scanning sensor (ray caster).
+
+    This function processes raycast hit data from a circular scanner sensor to compute
+    the distances to detected objects. The distances are clamped to the sensor's maximum
+    range, and infinite values (indicating no hit) are replaced with the maximum range.
+    """
+    sensor: RayCasterCfg = env.scene.sensors[sensor_cfg.name]
+
+    differences = sensor.data.ray_hits_w - sensor.data.pos_w.unsqueeze(1).expand(-1, sensor.data.ray_hits_w.size(1), -1)
+    norm_differences = torch.norm(differences, p=2, dim=2)
+
+    result = torch.where(
+        torch.isinf(norm_differences),
+        sensor.cfg.max_distance,
+        torch.clamp(norm_differences, max=sensor.cfg.max_distance),
+    )
+
+    if use_rerun:
+        rr_visualizers.circle_scanner_visualizer()
+
+    return result
