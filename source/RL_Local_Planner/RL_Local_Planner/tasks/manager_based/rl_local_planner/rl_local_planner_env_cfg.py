@@ -11,7 +11,7 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.markers.config import CUBOID_MARKER_CFG
-from isaaclab.sensors import RayCasterCfg, patterns
+from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
@@ -90,7 +90,7 @@ class RewardsCfg:
 
     reached_target = RewTerm(  # type: ignore
         func=custom_mdp.reached_target,
-        weight=3.0,
+        weight=6.0,
         params={"command_name": "pose_command", "threshold": SUCCESS_DISTANCE},
     )
     position_tracking = RewTerm(
@@ -98,15 +98,10 @@ class RewardsCfg:
         weight=0.5,
         params={"std": 2.0, "command_name": "pose_command"},
     )
-    position_tracking_fine_grained = RewTerm(
-        func=mdp.position_command_error_tanh,
-        weight=0.5,
-        params={"std": 0.2, "command_name": "pose_command"},
-    )
-    orientation_tracking = RewTerm(
-        func=mdp.heading_command_error_abs,
-        weight=-0.2,
-        params={"command_name": "pose_command"},
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-3.0,
+        params={"sensor_cfg": SceneEntityCfg("contact_sensor", body_names=".*THIGH"), "threshold": 1.0},
     )
 
 
@@ -189,6 +184,12 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
             debug_vis=True,
             mesh_prim_paths=["/World/ground"],
             max_distance=10.0,
+        )
+
+        self.scene.contact_sensor = ContactSensorCfg(
+            prim_path="{ENV_REGEX_NS}/Robot/.*",
+            track_air_time=True,
+            filter_prim_paths_expr=["/World/ground/terrain/mesh"],
         )
 
         self.sim.dt = LOW_LEVEL_ENV_CFG.sim.dt
