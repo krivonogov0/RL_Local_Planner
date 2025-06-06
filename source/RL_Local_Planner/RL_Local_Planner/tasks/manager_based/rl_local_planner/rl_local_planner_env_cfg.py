@@ -1,13 +1,6 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
 import math
 
 import isaaclab.sim as sim_utils
-import isaaclab.terrains as terrain_gen
-import isaaclab.terrains.height_field as hf_gen
 import isaaclab_tasks.manager_based.navigation.mdp as mdp
 import RL_Local_Planner.tasks.manager_based.rl_local_planner.mdp as custom_mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
@@ -19,93 +12,19 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.markers.config import CUBOID_MARKER_CFG
 from isaaclab.sensors import RayCasterCfg, patterns
-from isaaclab.terrains import FlatPatchSamplingCfg, TerrainImporterCfg
+from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_cfg import (
     AnymalCFlatEnvCfg,
 )
+from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor_nadigation.indoor_nadigation_cfg import (
+    INDOOR_NAVIGATION_CFG,
+)
 
 USE_RERUN = True
 
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
-
-INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
-    size=(8.0, 8.0),
-    border_width=20.0,
-    num_rows=5,
-    num_cols=5,
-    horizontal_scale=0.05,
-    vertical_scale=0.1,
-    slope_threshold=0.75,
-    difficulty_range=(0.0, 1.0),
-    use_cache=False,
-    sub_terrains={
-        "medium_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
-            size=(2.0, 2.0),
-            horizontal_scale=0.05,
-            vertical_scale=0.1,
-            num_obstacles=20,
-            obstacle_width_range=(0.5, 1.5),
-            obstacle_height_range=(1.0, 1.0),
-            platform_width=2.0,
-            border_width=0.3,
-            obstacle_height_mode="fixed",
-            flat_patch_sampling={
-                "target": FlatPatchSamplingCfg(
-                    num_patches=5,
-                    x_range=(-2, 2),
-                    y_range=(-2, 2),
-                    z_range=(-0.1, 0.1),
-                    patch_radius=0.5,
-                    max_height_diff=0.05,
-                ),
-            },
-        ),
-        "less_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
-            size=(2.0, 2.0),
-            horizontal_scale=0.05,
-            vertical_scale=0.1,
-            num_obstacles=3,
-            obstacle_width_range=(1.5, 2.5),
-            obstacle_height_range=(1.0, 1.0),
-            platform_width=2.0,
-            border_width=0.3,
-            obstacle_height_mode="fixed",
-            flat_patch_sampling={
-                "target": FlatPatchSamplingCfg(
-                    num_patches=5,
-                    x_range=(-2, 2),
-                    y_range=(-2, 2),
-                    z_range=(-0.1, 0.1),
-                    patch_radius=0.5,
-                    max_height_diff=0.05,
-                ),
-            },
-        ),
-        "more_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
-            size=(2.0, 2.0),
-            horizontal_scale=0.05,
-            vertical_scale=0.1,
-            num_obstacles=50,
-            obstacle_width_range=(0.5, 0.8),
-            obstacle_height_range=(1.0, 1.0),
-            platform_width=2.0,
-            border_width=0.3,
-            obstacle_height_mode="fixed",
-            flat_patch_sampling={
-                "target": FlatPatchSamplingCfg(
-                    num_patches=5,
-                    x_range=(-2, 2),
-                    y_range=(-2, 2),
-                    z_range=(-0.1, 0.1),
-                    patch_radius=0.5,
-                    max_height_diff=0.05,
-                ),
-            },
-        ),
-    },
-)
 
 
 @configclass
