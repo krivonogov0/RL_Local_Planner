@@ -26,6 +26,6 @@ def circle_scanner_observation(
     )
 
     if use_rerun:
-        rr_visualizers.circle_scanner_visualizer()
+        rr_visualizers.circle_scanner_visualizer(distances=result)
 
     return result
