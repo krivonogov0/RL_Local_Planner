@@ -88,7 +88,11 @@ class ObservationsCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    termination_penalty = RewTerm(func=mdp.is_terminated, weight=-400.0)
+    reached_target = RewTerm(  # type: ignore
+        func=custom_mdp.reached_target,
+        weight=3.0,
+        params={"command_name": "pose_command", "threshold": SUCCESS_DISTANCE},
+    )
     position_tracking = RewTerm(
         func=mdp.position_command_error_tanh,
         weight=0.5,
