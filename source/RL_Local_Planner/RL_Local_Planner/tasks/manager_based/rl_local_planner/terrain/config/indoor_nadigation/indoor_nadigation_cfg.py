@@ -1,6 +1,6 @@
 import isaaclab.terrains as terrain_gen
 import isaaclab.terrains.height_field as hf_gen
-from isaaclab.terrains import FlatPatchSamplingCfg,
+from isaaclab.terrains import FlatPatchSamplingCfg
 
 INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
     size=(8.0, 8.0),
