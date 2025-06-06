@@ -25,9 +25,8 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 import gymnasium as gym
-from prettytable import PrettyTable
-
 import RL_Local_Planner.tasks  # noqa: F401
+from prettytable import PrettyTable
 
 
 def main():
