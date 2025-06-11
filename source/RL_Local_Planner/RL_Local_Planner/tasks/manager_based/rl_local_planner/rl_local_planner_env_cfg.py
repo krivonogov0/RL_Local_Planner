@@ -90,7 +90,7 @@ class RewardsCfg:
 
     reached_target = RewTerm(  # type: ignore
         func=custom_mdp.reached_target,
-        weight=6.0,
+        weight=50.0,
         params={"command_name": "pose_command", "threshold": SUCCESS_DISTANCE},
     )
     position_tracking = RewTerm(
@@ -177,9 +177,9 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
         self.scene.circle_scanner = RayCasterCfg(
             prim_path="{ENV_REGEX_NS}/Robot/base",
             offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 0.1)),
-            attach_yaw_only=True,
+            attach_yaw_only=False,
             pattern_cfg=patterns.LidarPatternCfg(
-                channels=1, vertical_fov_range=(-1.0, 1.0), horizontal_fov_range=(-180.0, 180.0), horizontal_res=2.0
+                channels=1, vertical_fov_range=(-1.0, 1.0), horizontal_fov_range=(-180.0, 180.0), horizontal_res=10.0
             ),
             debug_vis=True,
             mesh_prim_paths=["/World/ground"],
