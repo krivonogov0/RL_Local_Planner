@@ -19,11 +19,17 @@ def circle_scanner_observation(
     differences = sensor.data.ray_hits_w - sensor.data.pos_w.unsqueeze(1).expand(-1, sensor.data.ray_hits_w.size(1), -1)
     norm_differences = torch.norm(differences, p=2, dim=2)
 
-    result = torch.where(
+    clipped_distances = torch.where(
         torch.isinf(norm_differences),
         sensor.cfg.max_distance,
         torch.clamp(norm_differences, max=sensor.cfg.max_distance),
     )
+    
+    # normalization coefficients
+    critical_dist = 1.5
+    sigmoid_coeff = 5.0
+
+    result = 1 / (1 + torch.exp(-sigmoid_coeff * (clipped_distances - critical_dist)))
 
     if use_rerun:
         rr_visualizers.circle_scanner_visualizer(distances=result)
