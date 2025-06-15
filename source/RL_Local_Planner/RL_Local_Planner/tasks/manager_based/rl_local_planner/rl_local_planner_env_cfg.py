@@ -20,6 +20,7 @@ from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_c
 )
 from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor_nadigation.indoor_nadigation_cfg import (
     INDOOR_NAVIGATION_CFG,
+    INDOOR_NAVIGATION_PLAY_CFG,
 )
 
 USE_RERUN = True
@@ -197,3 +198,28 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
             )
         if self.scene.contact_forces is not None:
             self.scene.contact_forces.update_period = self.sim.dt
+
+
+@configclass
+class RlLocalPlannerEnvPLAYCfg(RlLocalPlannerEnvCfg):
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self.scene.terrain = TerrainImporterCfg(
+            prim_path="/World/ground",
+            terrain_type="generator",
+            terrain_generator=INDOOR_NAVIGATION_PLAY_CFG,
+            max_init_terrain_level=INDOOR_NAVIGATION_PLAY_CFG.num_rows - 1,
+            collision_group=-1,
+            physics_material=sim_utils.RigidBodyMaterialCfg(
+                friction_combine_mode="multiply",
+                restitution_combine_mode="multiply",
+                static_friction=1.0,
+                dynamic_friction=1.0,
+            ),
+            visual_material=sim_utils.MdlFileCfg(
+                mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
+                project_uvw=True,
+                texture_scale=(0.25, 0.25),
+            ),
+            debug_vis=True,
+        )

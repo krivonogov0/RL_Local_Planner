@@ -52,7 +52,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
                     z_range=(-0.01, 0.1),
                     patch_radius=1.0,
                     max_height_diff=0.01,
-                ), 
+                ),
             },
         ),
         # "more_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
@@ -76,5 +76,41 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
         #         ),
         #     },
         # ),
+    },
+)
+
+
+INDOOR_NAVIGATION_PLAY_CFG = terrain_gen.TerrainGeneratorCfg(
+    size=(8.0, 8.0),
+    border_width=20.0,
+    num_rows=1,
+    num_cols=1,
+    horizontal_scale=0.1,
+    vertical_scale=0.1,
+    slope_threshold=0.75,
+    difficulty_range=(0.0, 1.0),
+    use_cache=False,
+    sub_terrains={
+        "medium_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
+            size=(4.0, 4.0),
+            horizontal_scale=0.05,
+            vertical_scale=0.1,
+            num_obstacles=10,
+            obstacle_width_range=(1.0, 1.5),
+            obstacle_height_range=(1.0, 1.0),
+            platform_width=2.0,
+            border_width=0.5,
+            obstacle_height_mode="fixed",
+            flat_patch_sampling={
+                "target": FlatPatchSamplingCfg(
+                    num_patches=3,
+                    x_range=(-8, 8),
+                    y_range=(-8, 8),
+                    z_range=(-0.01, 0.1),
+                    patch_radius=0.5,
+                    max_height_diff=0.01,
+                ),
+            },
+        ),
     },
 )
