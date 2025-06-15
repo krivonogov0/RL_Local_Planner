@@ -223,3 +223,5 @@ class RlLocalPlannerEnvPLAYCfg(RlLocalPlannerEnvCfg):
             ),
             debug_vis=True,
         )
+
+        self.events.benchmark = EventTerm(func=custom_mdp.benchmark, mode="reset")
