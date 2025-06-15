@@ -38,7 +38,7 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.jetbot_rl_local_planner_env_cfg:RlLocalPlannerJetbotEnvCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_cfg_entry_point": f"{agents.__name__}:jetbot_skrl_ppo_cfg.yaml",
     },
 )
 
@@ -48,6 +48,6 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.jetbot_rl_local_planner_env_cfg:RlLocalPlannerJetbotEnvPLAYCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_cfg_entry_point": f"{agents.__name__}:jetbot_skrl_ppo_cfg.yaml",
     },
 )
