@@ -73,8 +73,6 @@ class ObservationsCfg:
         """Observations for policy group."""
 
         # observation terms (order preserved)
-        base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
-        projected_gravity = ObsTerm(func=mdp.projected_gravity)
         pose_command = ObsTerm(func=mdp.generated_commands, params={"command_name": "pose_command"})
         circle_scanner = ObsTerm(
             func=custom_mdp.circle_scanner_observation,
