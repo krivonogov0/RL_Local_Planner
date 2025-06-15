@@ -24,7 +24,7 @@ def circle_scanner_observation(
         sensor.cfg.max_distance,
         torch.clamp(norm_differences, max=sensor.cfg.max_distance),
     )
-    
+
     # normalization coefficients
     critical_dist = 1.5
     sigmoid_coeff = 5.0

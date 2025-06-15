@@ -94,6 +94,11 @@ class RewardsCfg:
         weight=50.0,
         params={"command_name": "pose_command", "threshold": SUCCESS_DISTANCE},
     )
+    action_penalty = RewTerm(  # type: ignore
+        func=custom_mdp.action_penalty_near_obstacles,
+        weight=-1.0,
+        params={"sensor_cfg": SceneEntityCfg("circle_scanner")},
+    )
     position_tracking = RewTerm(
         func=mdp.position_command_error_tanh,
         weight=0.5,
