@@ -35,3 +35,18 @@ def circle_scanner_observation(
         rr_visualizers.circle_scanner_visualizer(distances=result)
 
     return result
+
+
+def generated_commands_normalized(env: ManagerBasedRLEnv, command_name: str) -> torch.Tensor:
+    """The normalized generated command from command term in the command manager with the given name."""
+    # normalization coefficients
+    max_distance = 5.0
+    max_angle = torch.pi
+
+    command = env.command_manager.get_command(command_name)  # [x, y, z, angle]
+
+    xy_angle_command = torch.cat([command[:, :2], command[:, 3:4]], dim=1)
+    xy_angle_command[:, :2] = xy_angle_command[:, :2] / max_distance
+    xy_angle_command[:, 2] = xy_angle_command[:, 2] / max_angle
+
+    return xy_angle_command

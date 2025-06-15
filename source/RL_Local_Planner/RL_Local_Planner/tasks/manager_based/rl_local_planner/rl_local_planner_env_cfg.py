@@ -73,7 +73,7 @@ class ObservationsCfg:
         """Observations for policy group."""
 
         # observation terms (order preserved)
-        pose_command = ObsTerm(func=mdp.generated_commands, params={"command_name": "pose_command"})
+        pose_command = ObsTerm(func=custom_mdp.generated_commands_normalized, params={"command_name": "pose_command"})
         circle_scanner = ObsTerm(
             func=custom_mdp.circle_scanner_observation,
             params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "use_rerun": USE_RERUN},
