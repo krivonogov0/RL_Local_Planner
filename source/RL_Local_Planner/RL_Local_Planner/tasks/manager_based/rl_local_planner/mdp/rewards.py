@@ -75,13 +75,13 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
     action = env.action_manager.action
 
     # penalty coefficients
-    critical_dist = 1.5
+    critical_sigmoid_dist_for_action = 0.08
     max_action_penalty = 0.5
     power = 2.0
 
     reward = torch.where(
-        min_sigmoid_distance < critical_dist,
-        max_action_penalty * (torch.norm(action, p=2, dim=1) ** power) * (1 - min_sigmoid_distance / critical_dist),
+        min_sigmoid_distance < critical_sigmoid_dist_for_action,
+        max_action_penalty * (torch.norm(action, p=2, dim=1) ** power) * (1 - min_sigmoid_distance / critical_sigmoid_dist_for_action),
         0.0,
     )
 

@@ -96,7 +96,7 @@ class RewardsCfg:
     )
     action_penalty = RewTerm(  # type: ignore
         func=custom_mdp.action_penalty_near_obstacles,
-        weight=-1.0,
+        weight=-0.05,
         params={"sensor_cfg": SceneEntityCfg("circle_scanner")},
     )
     position_tracking = RewTerm(
