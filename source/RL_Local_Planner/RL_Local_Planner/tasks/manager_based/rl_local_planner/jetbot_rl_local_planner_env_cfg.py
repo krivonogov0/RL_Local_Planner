@@ -70,7 +70,8 @@ class PointNavSceneCfg(InteractiveSceneCfg):
         ),
     )
 
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Jetbot/chassis/geometry/body")
+    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Jetbot/Cube") # /World/envs/env_0/Jetbot/chassis/geometry/body
+
 
 
 
@@ -141,8 +142,7 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-3.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*body"), "threshold": 1.0},  
-
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="Cube"), "threshold": 1.0},  
     )
 
 
@@ -167,7 +167,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*body"), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="Cube"), "threshold": 1.0},
     )
     is_success = DoneTerm(
         func=custom_mdp.is_success,

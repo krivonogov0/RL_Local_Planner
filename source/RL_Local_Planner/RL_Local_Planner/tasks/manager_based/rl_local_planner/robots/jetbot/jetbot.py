@@ -15,8 +15,13 @@ from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
+from pathlib import Path, PosixPath
+
+path_folder = Path(__file__).parents[6]
+print("path_folderpath_folderpath_folder", path_folder)
+
 JETBOT_CONFIG = ArticulationCfg(
-    spawn=sim_utils.UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Robots/Jetbot/jetbot.usd",activate_contact_sensors=True,),
+    spawn=sim_utils.UsdFileCfg(usd_path=f"{path_folder}/assets/robots/jetbot/jetbot.usd",activate_contact_sensors=True,),
     actuators={"wheel_acts": ImplicitActuatorCfg(joint_names_expr=[".*"], damping=None, stiffness=None)},
 )
 
