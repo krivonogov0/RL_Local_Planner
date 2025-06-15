@@ -88,3 +88,25 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
     )
 
     return reward
+
+
+def penalty_for_sideways_movement(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """
+    Penalize sideways movement (large absolute Y-axis actions).
+
+    Returns negative reward proportional to the squared Y-component of the action,
+    encouraging the dog to move forward rather than sideways.
+    """
+    action = env.action_manager.action
+
+    y_action = action[:, 1].abs()
+
+    max_penalty = 0.5  # Maximum penalty when y_action is at threshold
+    y_threshold = 0.3  # Threshold above which penalty starts applying
+    power = 2.0  # How sharply penalty increases with y_action
+
+    reward = torch.where(
+        y_action > y_threshold, max_penalty * ((y_action - y_threshold) / (1 - y_threshold)) ** power, 0.0
+    )
+
+    return reward

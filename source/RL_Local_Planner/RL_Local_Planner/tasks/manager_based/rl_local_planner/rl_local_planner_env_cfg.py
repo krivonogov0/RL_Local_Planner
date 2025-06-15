@@ -92,7 +92,7 @@ class RewardsCfg:
         weight=50.0,
         params={"command_name": "pose_command", "threshold": SUCCESS_DISTANCE},
     )
-    action_penalty = RewTerm(  # type: ignore
+    action_near_obstacles_penalty = RewTerm(  # type: ignore
         func=custom_mdp.action_penalty_near_obstacles,
         weight=-0.05,
         params={"sensor_cfg": SceneEntityCfg("circle_scanner")},
@@ -106,6 +106,11 @@ class RewardsCfg:
         func=mdp.undesired_contacts,
         weight=-3.0,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*THIGH"), "threshold": 1.0},
+    )
+    y_action_penalty = RewTerm(
+        func=custom_mdp.penalty_for_sideways_movement,
+        weight=-0.2,
+        params={},
     )
 
 
