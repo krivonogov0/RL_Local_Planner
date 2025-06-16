@@ -8,11 +8,36 @@ from isaaclab.sensors import RayCasterCfg
 def circle_scanner_observation(
     env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, use_rerun: bool = False, critical_dist: float = 1.5, sigmoid_coeff: float = 5.0
 ) -> torch.Tensor:
-    """Computes distance observations from a circular scanning sensor (ray caster).
+    """Computes distance observations from a circular scanning sensor (ray caster) and applies
+    a sigmoid transformation to the distances.
 
-    This function processes raycast hit data from a circular scanner sensor to compute
-    the distances to detected objects. The distances are clamped to the sensor's maximum
-    range, and infinite values (indicating no hit) are replaced with the maximum range.
+    The function processes raycast hit data from a circular scanner sensor to compute:
+    1. Euclidean distances to detected objects
+    2. Clamps distances to the sensor's maximum range (replaces infinity with max_distance)
+    3. Applies a sigmoid transformation to make the output smoother and bounded
+
+    Args:
+        env (ManagerBasedRLEnv): The reinforcement learning environment instance.
+        sensor_cfg (SceneEntityCfg): Configuration of the sensor containing its name and parameters.
+        use_rerun (bool, optional): If True, visualizes the sensor data using Rerun. Defaults to False.
+        critical_dist (float, optional): The critical distance threshold (in meters) where the sigmoid 
+            output should be 0.5. Distances below this value will produce outputs > 0.5. 
+            Represents the "safety boundary" for obstacle avoidance. Defaults to 1.5.
+        sigmoid_coeff (float, optional): Coefficient controlling the steepness of the sigmoid transition.
+            Higher values make the transition sharper (more binary), lower values make it smoother.
+            Typical range: 3-10. Defaults to 5.0.
+
+    Returns:
+        torch.Tensor: A tensor containing transformed distance observations with shape (N_rays,).
+            Values range between 0 (very close) and 1 (far or no hit).
+
+    Notes:
+        - The sigmoid transformation formula: 1 / (1 + exp(-sigmoid_coeff * (distance - critical_dist)))
+        - Output interpretation:
+            * 0.5 means exactly at critical distance
+            * >0.5 means closer than critical distance (potential danger)
+            * <0.5 means farther than critical distance (safe zone)
+        - Infinite distances (no hits) are converted to sensor.cfg.max_distance before transformation
     """
     sensor: RayCasterCfg = env.scene.sensors[sensor_cfg.name]
 
@@ -33,15 +58,40 @@ def circle_scanner_observation(
     return result
 
 
-def generated_commands_normalized(env: ManagerBasedRLEnv, command_name: str) -> torch.Tensor:
-    """The normalized generated command from command term in the command manager with the given name."""
-    # normalization coefficients
-    max_distance = 5.0
-    max_angle = torch.pi
+def generated_commands_normalized(env: ManagerBasedRLEnv, command_name: str, max_distance: float = 5.0, max_angle: float = 3.14) -> torch.Tensor:
+    """Normalizes generated commands from the command manager to a standardized range.
 
+    Processes 3D position + angle commands (x,y,z,angle) by:
+    1. Extracting the command vector from the command manager
+    2. Normalizing xy-position components by max_distance
+    3. Normalizing angle component by max_angle
+    4. Dropping the z-coordinate (not normalized)
+
+    Args:
+        env (ManagerBasedRLEnv): The reinforcement learning environment instance containing
+            the command manager.
+        command_name (str): Name of the command term to retrieve from the command manager.
+        max_distance (float, optional): Maximum expected distance (in meters) for normalization.
+            Used to scale xy-position components to [0, 1] range. Defaults to 5.0.
+        max_angle (float, optional): Maximum expected angle (in radians) for normalization.
+            Used to scale angle component to [0, 1] range. Defaults to π (≈3.14) for [-π,π] range.
+
+    Returns:
+        torch.Tensor: Normalized command vector with shape (N, 3) containing:
+            - [:, 0]: x-position normalized by max_distance (range ~[-1, 1])
+            - [:, 1]: y-position normalized by max_distance (range ~[-1, 1])
+            - [:, 2]: angle normalized by max_angle (range ~[-1, 1])
+
+    Notes:
+        - Input command format: [x, y, z, angle] where angle is in radians
+        - Z-coordinate is intentionally dropped from output
+        - Normalization is linear scaling: normalized_value = raw_value / max_value
+        - Output ranges may exceed [-1, 1] if input values exceed max_distance/max_angle
+        - Typical usage: Normalizing commands for neural network input or reward calculation
+    """
     command = env.command_manager.get_command(command_name)  # [x, y, z, angle]
 
-    xy_angle_command = torch.cat([command[:, :2], command[:, 3:4]], dim=1)
+    xy_angle_command = torch.cat([command[:, :2], command[:, 3:4]], dim=1)  # [x, y, angle]
     xy_angle_command[:, :2] = xy_angle_command[:, :2] / max_distance
     xy_angle_command[:, 2] = xy_angle_command[:, 2] / max_angle
 

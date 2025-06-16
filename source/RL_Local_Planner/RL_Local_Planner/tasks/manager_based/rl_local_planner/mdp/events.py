@@ -7,6 +7,50 @@ experiment_count = 0
 
 
 def benchmark(env: ManagerBasedRLEnv, env_ids: torch.Tensor):
+    """Collects and logs termination statistics during RL policy training.
+
+    This event callback tracks how often each termination condition is triggered
+    and periodically displays statistics about the most common failure modes.
+
+    Features:
+    - Tracks termination counts across all environments
+    - Periodically prints formatted statistics (every 5 experiments)
+    - Computes fractional occurrence of each termination condition
+    - Maintains global counters across multiple calls
+
+    Args:
+        env (ManagerBasedRLEnv): The RL training environment instance
+        env_ids (torch.Tensor): Tensor of environment IDs being evaluated
+
+    Global State:
+        TERM_COUNTS (dict): Maintains cumulative count of each termination condition
+        experiment_count (int): Total number of experiments processed
+
+    Output Format:
+        Prints PrettyTable with columns:
+        - Termination Reason: Name of the termination condition
+        - Count: Absolute number of occurrences
+        - Fraction: Relative frequency (count/total)
+
+    Example Output:
+
+        Total Experiments: 30
+        +---------------------+-------+---------+
+        |   Termination Conditions Statistics   |
+        +---------------------+-------+---------+
+        | Termination Reason  | Count | Fraction|
+        +---------------------+-------+---------+
+        | time_out            | 142   |  0.71   |
+        | base_contact        | 38    |  0.19   |
+        | is_success          | 20    |  0.10   |
+        +---------------------+-------+---------+
+
+    Notes:
+        - Call this function after each environment step during training
+        - Statistics are printed every 5th experiment (modifiable in code)
+        - Reset global variables TERM_COUNTS and experiment_count between training runs
+        - Only tracks active termination terms from the termination manager
+    """
     global TERM_COUNTS, experiment_count
 
     list_terms = env.termination_manager.active_terms
