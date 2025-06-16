@@ -2,7 +2,7 @@ import RL_Local_Planner.tasks.manager_based.rl_local_planner.visualizers as rr_v
 import torch
 from isaaclab.envs.manager_based_rl_env import ManagerBasedRLEnv
 from isaaclab.managers.scene_entity_cfg import SceneEntityCfg
-from isaaclab.sensors import RayCasterCfg
+from isaaclab.sensors import RayCasterCfg, TiledCamera
 
 
 def circle_scanner_observation(
@@ -102,3 +102,30 @@ def generated_commands_normalized(
     xy_angle_command[:, 2] = xy_angle_command[:, 2] / max_angle
 
     return xy_angle_command
+
+
+def top_view_depth(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+) -> torch.Tensor:
+    """Retrieves the depth map from the specified top-down camera sensor.
+
+    The function accesses the depth output from the camera defined in the sensor configuration,
+    providing a depth image as a torch tensor. The depth values represent the distance from the
+    camera to objects in the scene, as perceived from the top view.
+
+    Intended for experiments with privileged information during training.
+    """
+    sensor: TiledCamera = env.scene.sensors[sensor_cfg.name]  # type: ignore
+
+    robot_positions = env.scene.articulations["robot"].data.root_pos_w
+    fixed_height = sensor.cfg.offset.pos[2]
+
+    robot_positions_fixed_z = robot_positions.clone()
+    robot_positions_fixed_z[:, 2] = fixed_height
+
+    sensor.set_world_poses(robot_positions_fixed_z)
+
+    result = sensor.data.output["depth"]  # make sure to set `data_types=["depth"]` in TiledCameraCfg!
+
+    return result
