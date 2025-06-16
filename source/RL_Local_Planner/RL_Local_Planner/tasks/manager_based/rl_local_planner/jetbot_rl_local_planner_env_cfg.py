@@ -40,7 +40,7 @@ class PointNavSceneCfg(InteractiveSceneCfg):
 
     # def __post_init__(self) -> None:
     #     super().__post_init__()
-    scene = TerrainImporterCfg(
+    terrain = TerrainImporterCfg(
         prim_path="/World/ground",
         terrain_type="generator",
         terrain_generator=INDOOR_NAVIGATION_CFG,

@@ -81,6 +81,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
 
 
 INDOOR_NAVIGATION_PLAY_CFG = terrain_gen.TerrainGeneratorCfg(
+    seed = 14,
     size=(8.0, 8.0),
     border_width=20.0,
     num_rows=1,
@@ -89,14 +90,14 @@ INDOOR_NAVIGATION_PLAY_CFG = terrain_gen.TerrainGeneratorCfg(
     vertical_scale=0.1,
     slope_threshold=0.75,
     difficulty_range=(0.0, 1.0),
-    use_cache=False,
+    use_cache=True,
     sub_terrains={
         "medium_density": hf_gen.HfDiscreteObstaclesTerrainCfg(
             size=(4.0, 4.0),
             horizontal_scale=0.05,
             vertical_scale=0.1,
             num_obstacles=10,
-            obstacle_width_range=(1.0, 1.5),
+            obstacle_width_range=(0.8, 1.5),
             obstacle_height_range=(1.0, 1.0),
             platform_width=2.0,
             border_width=0.5,
@@ -104,8 +105,8 @@ INDOOR_NAVIGATION_PLAY_CFG = terrain_gen.TerrainGeneratorCfg(
             flat_patch_sampling={
                 "target": FlatPatchSamplingCfg(
                     num_patches=3,
-                    x_range=(-8, 8),
-                    y_range=(-8, 8),
+                    x_range=(-6, 6),
+                    y_range=(-6, 6),
                     z_range=(-0.01, 0.1),
                     patch_radius=0.5,
                     max_height_diff=0.01,
