@@ -14,16 +14,23 @@ models:
     initial_log_std: -0.6931471805599453
     network:
       - name: net
-        input: STATES[:, 0:38]
+        input: concatenate([STATES["pose_command"], STATES["circle_scanner"]])
         layers: [64, 64]
         activations: elu
     output: ACTIONS
   value:  # see deterministic_model parameters
     class: DeterministicMixin
-    clip_actions: False
     network:
+      - name: features_extractor
+        input: permute(STATES["top_view"], (0, 3, 1, 2))
+        layers:
+          - conv2d: {out_channels: 32, kernel_size: 5, stride: 2}
+          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}
+          - flatten
+          - linear: 64
+        activations: [relu, relu, null, relu]
       - name: net
-        input: STATES
+        input: concatenate([features_extractor, STATES["pose_command"], STATES["circle_scanner"]])
         layers: [128, 128, 128]
         activations: elu
     output: ONE

@@ -89,6 +89,9 @@ class ObservationsCfg:
             },
         )
 
+        def __post_init__(self):
+            self.concatenate_terms = False
+
     # observation groups
     policy: PolicyCfg = PolicyCfg()
 
@@ -212,8 +215,8 @@ class RlLocalPlannerPrivilegedInfoEnvCfg(ManagerBasedRLEnvCfg):
             spawn=sim_utils.PinholeCameraCfg(
                 focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
             ),
-            width=32,
-            height=32,
+            width=128,
+            height=128,
         )
 
         self.sim.dt = LOW_LEVEL_ENV_CFG.sim.dt
