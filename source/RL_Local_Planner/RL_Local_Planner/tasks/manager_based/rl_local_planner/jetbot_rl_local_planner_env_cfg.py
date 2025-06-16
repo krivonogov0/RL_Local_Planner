@@ -31,7 +31,7 @@ from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor
 
 USE_RERUN = True
 
-SUCCESS_DISTANCE = 0.5
+SUCCESS_DISTANCE = 0.3
 
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
 
@@ -40,8 +40,6 @@ LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
 class PointNavSceneCfg(InteractiveSceneCfg):
     """Configuration for a Jetbot simple scene."""
 
-    # def __post_init__(self) -> None:
-    #     super().__post_init__()
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
         terrain_type="generator",
@@ -98,6 +96,8 @@ class EventCfg:
 
 @configclass
 class ActionsCfg:
+    """Action terms for the MDP."""
+
     velocity = JetbotActionTermCfg(asset_name="robot", scale=4)  # type: ignore
 
 
@@ -244,4 +244,4 @@ class RlLocalPlannerJetbotEnvPLAYCfg(RlLocalPlannerJetbotEnvCfg):
             debug_vis=True,
         )
 
-        self.events.benchmark = EventTerm(func=custom_mdp.benchmark, mode="reset")
+        self.events.benchmark = EventTerm(func=custom_mdp.benchmark, mode="reset")  # type: ignore

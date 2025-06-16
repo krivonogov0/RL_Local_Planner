@@ -80,7 +80,6 @@ class ObservationsCfg:
                 "sensor_cfg": SceneEntityCfg("circle_scanner"),
                 "use_rerun": USE_RERUN,
                 "critical_dist": 1.5,
-                "sigmoid_coeff": 5.0,
             },
         )
 
@@ -100,7 +99,7 @@ class RewardsCfg:
     action_near_obstacles_penalty = RewTerm(  # type: ignore
         func=custom_mdp.action_penalty_near_obstacles,
         weight=-0.05,
-        params={"sensor_cfg": SceneEntityCfg("circle_scanner")},
+        params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "critical_dist": 1.5},
     )
     position_tracking = RewTerm(
         func=mdp.position_command_error_tanh,
@@ -237,4 +236,4 @@ class RlLocalPlannerEnvPLAYCfg(RlLocalPlannerEnvCfg):
             debug_vis=True,
         )
 
-        self.events.benchmark = EventTerm(func=custom_mdp.benchmark, mode="reset")
+        self.events.benchmark = EventTerm(func=custom_mdp.benchmark, mode="reset")  # type: ignore

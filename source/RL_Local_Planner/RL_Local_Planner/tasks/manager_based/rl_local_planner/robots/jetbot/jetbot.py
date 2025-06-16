@@ -12,12 +12,11 @@ from isaaclab.envs import ManagerBasedEnv
 from isaaclab.managers import ActionTerm, ActionTermCfg
 from isaaclab.utils import configclass
 
-path_folder = Path(__file__).parents[6]
-print("path_folderpath_folderpath_folder", path_folder)
+PATH_TO_PARENT_FOLDER = Path(__file__).parents[6]
 
 JETBOT_CONFIG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{path_folder}/assets/robots/jetbot/jetbot.usd",
+        usd_path=f"{PATH_TO_PARENT_FOLDER}/assets/robots/jetbot/jetbot.usd",
         activate_contact_sensors=True,
     ),
     actuators={"wheel_acts": ImplicitActuatorCfg(joint_names_expr=[".*"], damping=None, stiffness=None)},
