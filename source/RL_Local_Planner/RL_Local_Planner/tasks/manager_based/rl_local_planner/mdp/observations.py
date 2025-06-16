@@ -125,7 +125,7 @@ def top_view_depth(
             - `data_types`: Must contain `"depth"` (configured in `TiledCameraCfg`).
 
     Returns:
-        torch.Tensor: Processed depth values as a flattened tensor of shape 
+        torch.Tensor: Processed depth values as a flattened tensor of shape
             `(batch_size, height * width * channels)`. Values scaled to [0.1, 1.0].
     """
     sensor: TiledCamera = env.scene.sensors[sensor_cfg.name]  # type: ignore

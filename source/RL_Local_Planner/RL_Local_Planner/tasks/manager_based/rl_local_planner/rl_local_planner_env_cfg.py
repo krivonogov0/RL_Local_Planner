@@ -4,6 +4,7 @@ import isaaclab.sim as sim_utils
 import isaaclab_tasks.manager_based.navigation.mdp as mdp
 import RL_Local_Planner.tasks.manager_based.rl_local_planner.mdp as custom_mdp
 from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -98,7 +99,7 @@ class RewardsCfg:
     )
     action_near_obstacles_penalty = RewTerm(  # type: ignore
         func=custom_mdp.action_penalty_near_obstacles,
-        weight=-0.05,
+        weight=-0.01,
         params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "critical_dist": 1.5},
     )
     position_tracking = RewTerm(
@@ -148,6 +149,19 @@ class TerminationsCfg:
 
 
 @configclass
+class CurriculumCfg:
+    """Curriculum terms for the MDP."""
+
+    action_near_obstacles_penalty_curriculum = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "action_near_obstacles_penalty", "weight": -0.05, "num_steps": 5000},
+    )
+    position_tracking_curriculum = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "position_tracking", "weight": 0.35, "num_steps": 5000}
+    )
+
+
+@configclass
 class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the navigation environment."""
 
@@ -160,6 +174,7 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
     commands: CommandsCfg = CommandsCfg()
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
+    curriculum: CurriculumCfg = CurriculumCfg()
 
     def __post_init__(self):
         """Post initialization."""
