@@ -38,8 +38,6 @@ LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
 class PointNavSceneCfg(InteractiveSceneCfg):
     """Configuration for a Jetbot simple scene."""
 
-    # def __post_init__(self) -> None:
-    #     super().__post_init__()
     scene = TerrainImporterCfg(
         prim_path="/World/ground",
         terrain_type="generator",
