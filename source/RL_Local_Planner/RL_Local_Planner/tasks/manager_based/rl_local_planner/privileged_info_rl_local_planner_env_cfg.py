@@ -54,7 +54,7 @@ class ObservationsCfg:
 class RlLocalPlannerPrivilegedInfoEnvCfg(RlLocalPlannerEnvCfg):
     """Configuration for the navigation environment."""
 
-    observations: ObservationsCfg = ObservationsCfg()
+    observations: ObservationsCfg = ObservationsCfg() # type: ignore
 
     def __post_init__(self):
         super().__post_init__()
