@@ -68,13 +68,21 @@ def reached_target(env: ManagerBasedRLEnv, command_name: str, threshold: float) 
     return torch.where(distance < threshold, 1.0 * reward_scale, 0)
 
 
-def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, critical_dist: float = 1.5, sigmoid_coeff: float = 5.0, critical_sigmoid_dist_for_action: float = 0.08, max_action_penalty: float = 0.5, power: float = 2.0) -> torch.Tensor:
+def action_penalty_near_obstacles(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    critical_dist: float = 1.5,
+    sigmoid_coeff: float = 5.0,
+    critical_sigmoid_dist_for_action: float = 0.08,
+    max_action_penalty: float = 0.5,
+    power: float = 2.0,
+) -> torch.Tensor:
     """Computes penalty for large actions when the agent is near obstacles.
-    
+
     The penalty increases when:
     1. The agent is close to obstacles (within critical_dist)
     2. The agent takes large actions (higher magnitude actions are penalized more)
-    
+
     The penalty is computed as a product of three factors:
     - Base penalty (max_action_penalty)
     - Action magnitude (L2 norm raised to given power)
@@ -83,11 +91,11 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
     Args:
         env (ManagerBasedRLEnv): The RL training environment instance.
         sensor_cfg (SceneEntityCfg): Configuration for the obstacle detection sensor.
-        critical_dist (float, optional): Distance threshold (in meters) where penalty becomes active. 
+        critical_dist (float, optional): Distance threshold (in meters) where penalty becomes active.
             Beyond this distance, penalty is zero. Defaults to 1.5.
         sigmoid_coeff (float, optional): Coefficient controlling smoothness of distance transition.
             Higher values make the transition sharper. Defaults to 5.0.
-        critical_sigmoid_dist_for_action (float, optional): Normalized distance threshold [0-1] 
+        critical_sigmoid_dist_for_action (float, optional): Normalized distance threshold [0-1]
             where action penalty reaches maximum. Defaults to 0.08.
         max_action_penalty (float, optional): Maximum penalty value when conditions are worst.
             Defaults to 0.5.
@@ -98,13 +106,13 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
         torch.Tensor: Negative reward (penalty) tensor with shape (num_envs,), where:
             - 0 when not near obstacles (distance > critical_dist)
             - max_penalty * (action_norm^power) * proximity_factor when near obstacles
-            
+
     Notes:
         - Uses sigmoid function to smoothly transition penalty activation near critical_dist
         - The penalty grows as the agent gets closer to obstacles (lower distance)
         - The penalty scales with the magnitude of the action (higher actions = higher penalty)
         - For multiple environments, computes penalties independently per environment
-        
+
     Example:
         >>> penalty = action_penalty_near_obstacles(env, "lidar", critical_dist=1.0)
         >>> # If very close to obstacle with large action, penalty might be 0.5
@@ -137,7 +145,9 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
     return reward
 
 
-def penalty_for_sideways_movement(env: ManagerBasedRLEnv, max_penalty: float = 0.5, y_threshold: float = 0.3, power: float = 2.0) -> torch.Tensor:
+def penalty_for_sideways_movement(
+    env: ManagerBasedRLEnv, max_penalty: float = 0.5, y_threshold: float = 0.3, power: float = 2.0
+) -> torch.Tensor:
     """Computes a penalty for sideways movement (Y-axis actions) to encourage forward motion.
 
     The penalty is zero when Y-axis action magnitude is below threshold, and increases
@@ -145,7 +155,7 @@ def penalty_for_sideways_movement(env: ManagerBasedRLEnv, max_penalty: float = 0
 
     Args:
         env (ManagerBasedRLEnv): The RL training environment instance.
-        max_penalty (float, optional): Maximum penalty value when Y-action is 1.0. 
+        max_penalty (float, optional): Maximum penalty value when Y-action is 1.0.
             Defaults to 0.5.
         y_threshold (float, optional): Action threshold [0-1] below which no penalty is applied.
             Defaults to 0.3.

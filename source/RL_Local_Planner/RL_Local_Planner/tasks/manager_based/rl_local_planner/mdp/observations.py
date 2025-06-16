@@ -6,7 +6,11 @@ from isaaclab.sensors import RayCasterCfg
 
 
 def circle_scanner_observation(
-    env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, use_rerun: bool = False, critical_dist: float = 1.5, sigmoid_coeff: float = 5.0
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    use_rerun: bool = False,
+    critical_dist: float = 1.5,
+    sigmoid_coeff: float = 5.0,
 ) -> torch.Tensor:
     """Computes distance observations from a circular scanning sensor (ray caster) and applies
     a sigmoid transformation to the distances.
@@ -20,8 +24,8 @@ def circle_scanner_observation(
         env (ManagerBasedRLEnv): The reinforcement learning environment instance.
         sensor_cfg (SceneEntityCfg): Configuration of the sensor containing its name and parameters.
         use_rerun (bool, optional): If True, visualizes the sensor data using Rerun. Defaults to False.
-        critical_dist (float, optional): The critical distance threshold (in meters) where the sigmoid 
-            output should be 0.5. Distances below this value will produce outputs > 0.5. 
+        critical_dist (float, optional): The critical distance threshold (in meters) where the sigmoid
+            output should be 0.5. Distances below this value will produce outputs > 0.5.
             Represents the "safety boundary" for obstacle avoidance. Defaults to 1.5.
         sigmoid_coeff (float, optional): Coefficient controlling the steepness of the sigmoid transition.
             Higher values make the transition sharper (more binary), lower values make it smoother.
@@ -58,7 +62,9 @@ def circle_scanner_observation(
     return result
 
 
-def generated_commands_normalized(env: ManagerBasedRLEnv, command_name: str, max_distance: float = 5.0, max_angle: float = 3.14) -> torch.Tensor:
+def generated_commands_normalized(
+    env: ManagerBasedRLEnv, command_name: str, max_distance: float = 5.0, max_angle: float = 3.14
+) -> torch.Tensor:
     """Normalizes generated commands from the command manager to a standardized range.
 
     Processes 3D position + angle commands (x,y,z,angle) by:

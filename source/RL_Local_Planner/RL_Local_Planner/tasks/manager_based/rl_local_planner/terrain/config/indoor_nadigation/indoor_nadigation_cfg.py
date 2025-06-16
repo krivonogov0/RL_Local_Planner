@@ -81,7 +81,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
 
 
 INDOOR_NAVIGATION_PLAY_CFG = terrain_gen.TerrainGeneratorCfg(
-    seed = 14,
+    seed=14,
     size=(8.0, 8.0),
     border_width=20.0,
     num_rows=1,

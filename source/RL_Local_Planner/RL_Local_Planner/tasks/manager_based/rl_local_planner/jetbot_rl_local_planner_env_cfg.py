@@ -3,6 +3,7 @@ import math
 import isaaclab.sim as sim_utils
 import isaaclab_tasks.manager_based.navigation.mdp as mdp
 import RL_Local_Planner.tasks.manager_based.rl_local_planner.mdp as custom_mdp
+from isaaclab.assets import AssetBaseCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
@@ -11,28 +12,29 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.markers.config import CUBOID_MARKER_CFG
-from isaaclab.sensors import RayCasterCfg, patterns
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
-from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR, ISAAC_NUCLEUS_DIR
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
-from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_cfg import (
     AnymalCFlatEnvCfg,
+)
+from RL_Local_Planner.tasks.manager_based.rl_local_planner.robots.jetbot.jetbot import (
+    JETBOT_CONFIG,
+    JetbotActionTermCfg,
 )
 from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor_nadigation.indoor_nadigation_cfg import (
     INDOOR_NAVIGATION_CFG,
     INDOOR_NAVIGATION_PLAY_CFG,
 )
-from RL_Local_Planner.tasks.manager_based.rl_local_planner.robots.jetbot.jetbot import JETBOT_CONFIG, JetbotActionTermCfg
-
 
 USE_RERUN = True
 
 SUCCESS_DISTANCE = 0.5
 
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
+
 
 @configclass
 class PointNavSceneCfg(InteractiveSceneCfg):
@@ -70,10 +72,7 @@ class PointNavSceneCfg(InteractiveSceneCfg):
         ),
     )
 
-    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Jetbot/Cube") # /World/envs/env_0/Jetbot/chassis/geometry/body
-
-
-
+    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Jetbot/Cube")
 
 
 @configclass
@@ -84,7 +83,7 @@ class EventCfg:
         func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5),"z": (0.1, 0.1), "yaw": (-3.14, 3.14)},
+            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "z": (0.1, 0.1), "yaw": (-3.14, 3.14)},
             "velocity_range": {
                 "x": (-0.0, 0.0),
                 "y": (-0.0, 0.0),
@@ -101,6 +100,7 @@ class EventCfg:
 class ActionsCfg:
     velocity = JetbotActionTermCfg(asset_name="robot", scale=4)  # type: ignore
 
+
 @configclass
 class ObservationsCfg:
     """Observation specifications for the MDP."""
@@ -113,7 +113,12 @@ class ObservationsCfg:
         pose_command = ObsTerm(func=custom_mdp.generated_commands_normalized, params={"command_name": "pose_command"})
         circle_scanner = ObsTerm(
             func=custom_mdp.circle_scanner_observation,
-            params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "use_rerun": USE_RERUN, "critical_dist": 0.75 , "sigmoid_coeff": 5.0},
+            params={
+                "sensor_cfg": SceneEntityCfg("circle_scanner"),
+                "use_rerun": USE_RERUN,
+                "critical_dist": 0.75,
+                "sigmoid_coeff": 5.0,
+            },
         )
 
     # observation groups
@@ -142,7 +147,7 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-3.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="Cube"), "threshold": 1.0},  
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="Cube"), "threshold": 1.0},
     )
 
 

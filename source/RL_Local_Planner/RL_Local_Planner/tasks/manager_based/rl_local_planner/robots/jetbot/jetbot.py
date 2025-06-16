@@ -1,27 +1,25 @@
 from __future__ import annotations
 
-from isaaclab.utils import configclass
-
-import torch
 from dataclasses import MISSING
-
-from isaaclab.assets import Articulation
-from isaaclab.envs import ManagerBasedEnv
-from isaaclab.managers import ActionTerm, ActionTermCfg
-
+from pathlib import Path
 
 import isaaclab.sim as sim_utils
+import torch
 from isaaclab.actuators import ImplicitActuatorCfg
+from isaaclab.assets import Articulation
 from isaaclab.assets.articulation import ArticulationCfg
-from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
-
-from pathlib import Path, PosixPath
+from isaaclab.envs import ManagerBasedEnv
+from isaaclab.managers import ActionTerm, ActionTermCfg
+from isaaclab.utils import configclass
 
 path_folder = Path(__file__).parents[6]
 print("path_folderpath_folderpath_folder", path_folder)
 
 JETBOT_CONFIG = ArticulationCfg(
-    spawn=sim_utils.UsdFileCfg(usd_path=f"{path_folder}/assets/robots/jetbot/jetbot.usd",activate_contact_sensors=True,),
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=f"{path_folder}/assets/robots/jetbot/jetbot.usd",
+        activate_contact_sensors=True,
+    ),
     actuators={"wheel_acts": ImplicitActuatorCfg(joint_names_expr=[".*"], damping=None, stiffness=None)},
 )
 
@@ -97,5 +95,3 @@ class JetbotActionTermCfg(TwoWheeledRobotActionTermCfg):
 
     joint_ids: list[int] = [0, 1]  # type: ignore
     """ids of wheel joints"""
-
-
