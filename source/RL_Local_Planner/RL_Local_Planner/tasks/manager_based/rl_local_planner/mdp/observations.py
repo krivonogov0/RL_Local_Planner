@@ -114,7 +114,6 @@ def top_view_depth(
     1. Accesses the depth output of a top-down camera configured in `sensor_cfg`.
     2. Adjusts the camera's height to a fixed z-offset (ignoring robot height variations).
     3. Applies a sigmoid scaling to normalize depth values to the range [0.1, 1.0].
-    4. Flattens the depth map into a 1D tensor (keeping batch dimension).
 
     Primarily used for privileged information in simulation-based RL training.
 
@@ -125,8 +124,8 @@ def top_view_depth(
             - `data_types`: Must contain `"depth"` (configured in `TiledCameraCfg`).
 
     Returns:
-        torch.Tensor: Processed depth values as a flattened tensor of shape
-            `(batch_size, height * width * channels)`. Values scaled to [0.1, 1.0].
+        torch.Tensor: Processed depth values as a tensor of shape
+            `(batch_size, height, width, channels)`. Values scaled to [0.1, 1.0].
     """
     sensor: TiledCamera = env.scene.sensors[sensor_cfg.name]  # type: ignore
 
