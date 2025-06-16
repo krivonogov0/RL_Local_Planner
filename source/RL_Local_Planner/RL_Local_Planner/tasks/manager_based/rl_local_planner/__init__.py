@@ -51,3 +51,27 @@ gym.register(
         "skrl_cfg_entry_point": f"{agents.__name__}:jetbot_skrl_ppo_cfg.yaml",
     },
 )
+
+gym.register(
+    id="Template-Rl-Local-Planner-Privileged-Info-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": (
+            f"{__name__}.privileged_info_rl_local_planner_env_cfg:RlLocalPlannerPrivilegedInfoEnvCfg"
+        ),
+        "skrl_cfg_entry_point": f"{agents.__name__}:privileged_info_skrl_ppo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Template-Rl-Local-Planner-Privileged-Info-PLAY-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": (
+            f"{__name__}.privileged_info_rl_local_planner_env_cfg:RlLocalPlannerPrivilegedInfoEnvPLAYCfg"
+        ),
+        "skrl_cfg_entry_point": f"{agents.__name__}:privileged_info_skrl_ppo_cfg.yaml",
+    },
+)

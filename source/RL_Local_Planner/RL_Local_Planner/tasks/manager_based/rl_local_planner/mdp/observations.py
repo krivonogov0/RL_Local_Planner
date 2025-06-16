@@ -126,6 +126,7 @@ def top_view_depth(
 
     sensor.set_world_poses(robot_positions_fixed_z)
 
-    result = sensor.data.output["depth"]  # make sure to set `data_types=["depth"]` in TiledCameraCfg!
+    depth = sensor.data.output["depth"]  # make sure to set `data_types=["depth"]` in TiledCameraCfg!
+    scaled_sigmoid = 0.1 + 0.9 * torch.sigmoid(depth)
 
-    return result
+    return scaled_sigmoid.flatten(start_dim=1)

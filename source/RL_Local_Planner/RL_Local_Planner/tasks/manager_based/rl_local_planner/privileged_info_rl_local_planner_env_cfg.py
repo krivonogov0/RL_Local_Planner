@@ -11,7 +11,7 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.markers.config import CUBOID_MARKER_CFG
-from isaaclab.sensors import RayCasterCfg, patterns
+from isaaclab.sensors import RayCasterCfg, TiledCameraCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
@@ -82,6 +82,12 @@ class ObservationsCfg:
                 "critical_dist": 1.5,
             },
         )
+        top_view = ObsTerm(
+            func=custom_mdp.top_view_depth,
+            params={
+                "sensor_cfg": SceneEntityCfg(name="tiled_camera"),
+            },
+        )
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
@@ -148,7 +154,7 @@ class TerminationsCfg:
 
 
 @configclass
-class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
+class RlLocalPlannerPrivilegedInfoEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the navigation environment."""
 
     # environment settings
@@ -199,6 +205,17 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
             max_distance=10.0,
         )
 
+        self.scene.tiled_camera = TiledCameraCfg(  # make sure to add the --enable_cameras argument!
+            prim_path="{ENV_REGEX_NS}/Robot/tiled_camera",
+            offset=TiledCameraCfg.OffsetCfg(pos=(0.0, 0.0, 5.0), rot=(0.707, 0.0, 0.707, 0.0), convention="world"),
+            data_types=["depth"],
+            spawn=sim_utils.PinholeCameraCfg(
+                focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
+            ),
+            width=32,
+            height=32,
+        )
+
         self.sim.dt = LOW_LEVEL_ENV_CFG.sim.dt
         self.sim.render_interval = LOW_LEVEL_ENV_CFG.decimation
         self.decimation = LOW_LEVEL_ENV_CFG.decimation * 10
@@ -213,7 +230,7 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
 
 
 @configclass
-class RlLocalPlannerEnvPLAYCfg(RlLocalPlannerEnvCfg):
+class RlLocalPlannerPrivilegedInfoEnvPLAYCfg(RlLocalPlannerPrivilegedInfoEnvCfg):
     def __post_init__(self) -> None:
         super().__post_init__()
         self.scene.terrain = TerrainImporterCfg(
