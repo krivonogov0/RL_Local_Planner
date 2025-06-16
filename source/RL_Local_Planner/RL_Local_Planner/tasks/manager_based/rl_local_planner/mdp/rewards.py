@@ -47,7 +47,7 @@ def reached_target(env: ManagerBasedRLEnv, command_name: str, threshold: float) 
     return torch.where(distance < threshold, 1.0 * reward_scale, 0)
 
 
-def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, critical_dist: float = 1.5, sigmoid_coeff: float = 5.0, critical_sigmoid_dist_for_action: float = 0.08, max_action_penalty: float = 0.5, power: float = 2.0) -> torch.Tensor:
     """
     Penalize large actions when close to obstacles.
 
@@ -65,19 +65,10 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
         torch.clamp(norm_differences, max=sensor.cfg.max_distance),
     )
 
-    # normalization coefficients
-    critical_dist = 1.5
-    sigmoid_coeff = 5.0
-
     sigmoid_distances = 1 / (1 + torch.exp(-sigmoid_coeff * (clipped_distances - critical_dist)))
     min_sigmoid_distance = sigmoid_distances.min(dim=1).values
 
     action = env.action_manager.action
-
-    # penalty coefficients
-    critical_sigmoid_dist_for_action = 0.08
-    max_action_penalty = 0.5
-    power = 2.0
 
     reward = torch.where(
         min_sigmoid_distance < critical_sigmoid_dist_for_action,
@@ -90,7 +81,7 @@ def action_penalty_near_obstacles(env: ManagerBasedRLEnv, sensor_cfg: SceneEntit
     return reward
 
 
-def penalty_for_sideways_movement(env: ManagerBasedRLEnv) -> torch.Tensor:
+def penalty_for_sideways_movement(env: ManagerBasedRLEnv, max_penalty: float = 0.5, y_threshold: float = 0.3, power: float = 2.0) -> torch.Tensor:
     """
     Penalize sideways movement (large absolute Y-axis actions).
 
@@ -100,10 +91,6 @@ def penalty_for_sideways_movement(env: ManagerBasedRLEnv) -> torch.Tensor:
     action = env.action_manager.action
 
     y_action = action[:, 1].abs()
-
-    max_penalty = 0.5  # Maximum penalty when y_action is at threshold
-    y_threshold = 0.3  # Threshold above which penalty starts applying
-    power = 2.0  # How sharply penalty increases with y_action
 
     reward = torch.where(
         y_action > y_threshold, max_penalty * ((y_action - y_threshold) / (1 - y_threshold)) ** power, 0.0

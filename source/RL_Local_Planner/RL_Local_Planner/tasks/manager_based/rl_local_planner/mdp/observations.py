@@ -6,7 +6,7 @@ from isaaclab.sensors import RayCasterCfg
 
 
 def circle_scanner_observation(
-    env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, use_rerun: bool = False
+    env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, use_rerun: bool = False, critical_dist: float = 1.5, sigmoid_coeff: float = 5.0
 ) -> torch.Tensor:
     """Computes distance observations from a circular scanning sensor (ray caster).
 
@@ -24,10 +24,6 @@ def circle_scanner_observation(
         sensor.cfg.max_distance,
         torch.clamp(norm_differences, max=sensor.cfg.max_distance),
     )
-
-    # normalization coefficients
-    critical_dist = 1.5
-    sigmoid_coeff = 5.0
 
     result = 1 / (1 + torch.exp(-sigmoid_coeff * (clipped_distances - critical_dist)))
 
