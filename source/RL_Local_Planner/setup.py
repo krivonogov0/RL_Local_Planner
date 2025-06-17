@@ -6,8 +6,8 @@
 """Installation script for the 'RL_Local_Planner' python package."""
 
 import os
-import toml
 
+import toml
 from setuptools import setup
 
 # Obtain the extension data from the extension.toml file
@@ -19,6 +19,7 @@ EXTENSION_TOML_DATA = toml.load(os.path.join(EXTENSION_PATH, "config", "extensio
 INSTALL_REQUIRES = [
     # NOTE: Add dependencies
     "psutil",
+    "rerun-sdk==0.21.0",
 ]
 
 # Installation operation

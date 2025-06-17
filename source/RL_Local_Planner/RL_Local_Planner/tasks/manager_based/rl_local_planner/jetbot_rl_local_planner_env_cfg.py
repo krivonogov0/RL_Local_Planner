@@ -3,8 +3,8 @@ import math
 import isaaclab.sim as sim_utils
 import isaaclab_tasks.manager_based.navigation.mdp as mdp
 import RL_Local_Planner.tasks.manager_based.rl_local_planner.mdp as custom_mdp
+from isaaclab.assets import AssetBaseCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
-from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -12,12 +12,17 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.markers.config import CUBOID_MARKER_CFG
-from isaaclab.sensors import RayCasterCfg, patterns
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
-from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.flat_env_cfg import (
     AnymalCFlatEnvCfg,
+)
+from RL_Local_Planner.tasks.manager_based.rl_local_planner.robots.jetbot.jetbot import (
+    JETBOT_CONFIG,
+    JetbotActionTermCfg,
 )
 from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor_nadigation.indoor_nadigation_cfg import (
     INDOOR_NAVIGATION_CFG,
@@ -26,9 +31,46 @@ from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor
 
 USE_RERUN = True
 
-SUCCESS_DISTANCE = 0.5
+SUCCESS_DISTANCE = 0.3
 
 LOW_LEVEL_ENV_CFG = AnymalCFlatEnvCfg()
+
+
+@configclass
+class PointNavSceneCfg(InteractiveSceneCfg):
+    """Configuration for a Jetbot simple scene."""
+
+    terrain = TerrainImporterCfg(
+        prim_path="/World/ground",
+        terrain_type="generator",
+        terrain_generator=INDOOR_NAVIGATION_CFG,
+        max_init_terrain_level=INDOOR_NAVIGATION_CFG.num_rows - 1,
+        collision_group=-1,
+        physics_material=sim_utils.RigidBodyMaterialCfg(
+            friction_combine_mode="multiply",
+            restitution_combine_mode="multiply",
+            static_friction=1.0,
+            dynamic_friction=1.0,
+        ),
+        visual_material=sim_utils.MdlFileCfg(
+            mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
+            project_uvw=True,
+            texture_scale=(0.25, 0.25),
+        ),
+        debug_vis=True,
+    )
+
+    robot = JETBOT_CONFIG.replace(prim_path="{ENV_REGEX_NS}/Jetbot")
+
+    sky_light = AssetBaseCfg(
+        prim_path="/World/skyLight",
+        spawn=sim_utils.DomeLightCfg(
+            intensity=750.0,
+            texture_file=f"{ISAAC_NUCLEUS_DIR}/Materials/Textures/Skies/PolyHaven/kloofendal_43d_clear_puresky_4k.hdr",
+        ),
+    )
+
+    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Jetbot/Cube")
 
 
 @configclass
@@ -39,7 +81,7 @@ class EventCfg:
         func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
+            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "z": (0.1, 0.1), "yaw": (-3.14, 3.14)},
             "velocity_range": {
                 "x": (-0.0, 0.0),
                 "y": (-0.0, 0.0),
@@ -56,13 +98,7 @@ class EventCfg:
 class ActionsCfg:
     """Action terms for the MDP."""
 
-    pre_trained_policy_action: mdp.PreTrainedPolicyActionCfg = mdp.PreTrainedPolicyActionCfg(
-        asset_name="robot",
-        policy_path=f"{ISAACLAB_NUCLEUS_DIR}/Policies/ANYmal-C/Blind/policy.pt",
-        low_level_decimation=4,
-        low_level_actions=LOW_LEVEL_ENV_CFG.actions.joint_pos,
-        low_level_observations=LOW_LEVEL_ENV_CFG.observations.policy,
-    )
+    velocity = JetbotActionTermCfg(asset_name="robot", scale=4)  # type: ignore
 
 
 @configclass
@@ -80,7 +116,7 @@ class ObservationsCfg:
             params={
                 "sensor_cfg": SceneEntityCfg("circle_scanner"),
                 "use_rerun": USE_RERUN,
-                "critical_dist": 1.5,
+                "critical_dist": 0.75,
             },
         )
 
@@ -99,8 +135,8 @@ class RewardsCfg:
     )
     action_near_obstacles_penalty = RewTerm(  # type: ignore
         func=custom_mdp.action_penalty_near_obstacles,
-        weight=-0.01,
-        params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "critical_dist": 1.5},
+        weight=-0.05,
+        params={"sensor_cfg": SceneEntityCfg("circle_scanner"), "critical_dist": 0.75},
     )
     position_tracking = RewTerm(
         func=mdp.position_command_error_tanh,
@@ -110,12 +146,7 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-3.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*THIGH"), "threshold": 1.0},
-    )
-    y_action_penalty = RewTerm(
-        func=custom_mdp.penalty_for_sideways_movement,
-        weight=-0.2,
-        params={},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="Cube"), "threshold": 1.0},
     )
 
 
@@ -140,7 +171,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="base"), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="Cube"), "threshold": 1.0},
     )
     is_success = DoneTerm(
         func=custom_mdp.is_success,
@@ -149,24 +180,11 @@ class TerminationsCfg:
 
 
 @configclass
-class CurriculumCfg:
-    """Curriculum terms for the MDP."""
-
-    action_near_obstacles_penalty_curriculum = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={"term_name": "action_near_obstacles_penalty", "weight": -0.05, "num_steps": 5000},
-    )
-    position_tracking_curriculum = CurrTerm(
-        func=mdp.modify_reward_weight, params={"term_name": "position_tracking", "weight": 0.35, "num_steps": 5000}
-    )
-
-
-@configclass
-class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
+class RlLocalPlannerJetbotEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the navigation environment."""
 
     # environment settings
-    scene: SceneEntityCfg = LOW_LEVEL_ENV_CFG.scene
+    scene: SceneEntityCfg = PointNavSceneCfg()
     actions: ActionsCfg = ActionsCfg()
     observations: ObservationsCfg = ObservationsCfg()
     events: EventCfg = EventCfg()
@@ -174,7 +192,6 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
     commands: CommandsCfg = CommandsCfg()
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
-    curriculum: CurriculumCfg = CurriculumCfg()
 
     def __post_init__(self):
         """Post initialization."""
@@ -182,29 +199,9 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
         self.scene.num_envs = 5
         self.scene.env_spacing = 5
 
-        self.scene.terrain = TerrainImporterCfg(
-            prim_path="/World/ground",
-            terrain_type="generator",
-            terrain_generator=INDOOR_NAVIGATION_CFG,
-            max_init_terrain_level=INDOOR_NAVIGATION_CFG.num_rows - 1,
-            collision_group=-1,
-            physics_material=sim_utils.RigidBodyMaterialCfg(
-                friction_combine_mode="multiply",
-                restitution_combine_mode="multiply",
-                static_friction=1.0,
-                dynamic_friction=1.0,
-            ),
-            visual_material=sim_utils.MdlFileCfg(
-                mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
-                project_uvw=True,
-                texture_scale=(0.25, 0.25),
-            ),
-            debug_vis=True,
-        )
-
         self.scene.circle_scanner = RayCasterCfg(
-            prim_path="{ENV_REGEX_NS}/Robot/base",
-            offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 0.1)),
+            prim_path="{ENV_REGEX_NS}/Jetbot/chassis",
+            offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 0.5)),
             attach_yaw_only=False,
             pattern_cfg=patterns.LidarPatternCfg(
                 channels=1, vertical_fov_range=(-1.0, 1.0), horizontal_fov_range=(-180.0, 180.0), horizontal_res=10.0
@@ -219,16 +216,12 @@ class RlLocalPlannerEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = LOW_LEVEL_ENV_CFG.decimation * 10
         self.episode_length_s = self.commands.pose_command.resampling_time_range[1]
 
-        if self.scene.height_scanner is not None:
-            self.scene.height_scanner.update_period = (
-                self.actions.pre_trained_policy_action.low_level_decimation * self.sim.dt
-            )
         if self.scene.contact_forces is not None:
             self.scene.contact_forces.update_period = self.sim.dt
 
 
 @configclass
-class RlLocalPlannerEnvPLAYCfg(RlLocalPlannerEnvCfg):
+class RlLocalPlannerJetbotEnvPLAYCfg(RlLocalPlannerJetbotEnvCfg):
     def __post_init__(self) -> None:
         super().__post_init__()
         self.scene.terrain = TerrainImporterCfg(
