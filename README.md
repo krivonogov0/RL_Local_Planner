@@ -71,6 +71,17 @@ To launch a trained policy:
 python scripts/skrl/play.py --task=<TASK_NAME> --checkpoint=<CHECKPOINT_PATH> --num_envs=1 --enable_cameras
 ```
 
+## Features
+
+During training, we use **privileged information** (`top-down depth image`) to help the agent learn better navigation and obstacle avoidance.
+
+This extra data is only available during training — the final policy works with standard onboard sensors, making it ready for real-world use.
+
+### PPO architecture (asymmetric actor-critic)
+
+![Policy Network](docs/_imgs/policy_network.png?raw=true "Policy Network")
+![Value Network](docs/_imgs/value_network.png?raw=true "Value Network")
+
 ## Code formatting
 
 We have a pre-commit template to automatically format your code.
