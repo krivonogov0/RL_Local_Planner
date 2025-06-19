@@ -57,7 +57,8 @@ def circle_scanner_observation(
     result = 1 / (1 + torch.exp(-sigmoid_coeff * (clipped_distances - critical_dist)))
 
     if use_rerun:
-        rr_visualizers.circle_scanner_visualizer(distances=result)
+        rr_visualizers.circle_scanner_visualizer(frame_name="clipped", distances=clipped_distances)
+        rr_visualizers.circle_scanner_visualizer(frame_name="sigmoid", distances=result)
 
     return result
 
@@ -107,13 +108,16 @@ def generated_commands_normalized(
 def top_view_depth(
     env: ManagerBasedRLEnv,
     sensor_cfg: SceneEntityCfg,
+    use_rerun: bool = False,
 ) -> torch.Tensor:
-    """Retrieves and processes the depth map from a top-down camera sensor.
+    """Generates a binary obstacle mask from a top-down depth camera.
 
     This function:
     1. Accesses the depth output of a top-down camera configured in `sensor_cfg`.
     2. Adjusts the camera's height to a fixed z-offset (ignoring robot height variations).
-    3. Applies a sigmoid scaling to normalize depth values to the range [0.1, 1.0].
+    3. Creates a binary mask where:
+       - 1.0 indicates obstacles (depth < threshold - 0.05)
+       - 0.0 indicates free space (depth >= threshold - 0.05)
 
     Primarily used for privileged information in simulation-based RL training.
 
@@ -122,10 +126,14 @@ def top_view_depth(
         sensor_cfg (SceneEntityCfg): Configuration for the camera sensor. Must include:
             - `name`: Sensor name in `env.scene.sensors`.
             - `data_types`: Must contain `"depth"` (configured in `TiledCameraCfg`).
+        use_rerun (bool, optional): If True, visualizes both raw depth and binary mask
+                                  using Rerun. Defaults to False.
 
     Returns:
-        torch.Tensor: Processed depth values as a tensor of shape
-            `(batch_size, height, width, channels)`. Values scaled to [0.1, 1.0].
+        torch.Tensor: Binary obstacle mask tensor of shape
+                    `(batch_size, height, width, channels)` where:
+                    - 1.0 = obstacle (too close to camera)
+                    - 0.0 = free space
     """
     sensor: TiledCamera = env.scene.sensors[sensor_cfg.name]  # type: ignore
 
@@ -138,6 +146,12 @@ def top_view_depth(
     sensor.set_world_poses(robot_positions_fixed_z)
 
     depth = sensor.data.output["depth"]  # make sure to set `data_types=["depth"]` in TiledCameraCfg!
-    scaled_sigmoid = 0.1 + 0.9 * torch.sigmoid(depth)
 
-    return scaled_sigmoid
+    threshold = sensor.cfg.offset.pos[2]
+    binary_mask = (depth < threshold - 0.05).float()
+
+    if use_rerun:
+        rr_visualizers.depth_top_view_visualizer(frame_name="raw", depth_image=depth)
+        rr_visualizers.depth_top_view_visualizer(frame_name="binary_mask", depth_image=binary_mask)
+
+    return binary_mask

@@ -15,7 +15,7 @@ from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor
     INDOOR_NAVIGATION_PLAY_CFG,
 )
 
-USE_RERUN = True
+USE_RERUN = False
 
 
 @configclass
@@ -40,6 +40,7 @@ class ObservationsCfg:
             func=custom_mdp.top_view_depth,
             params={
                 "sensor_cfg": SceneEntityCfg(name="tiled_camera"),
+                "use_rerun": USE_RERUN,
             },
         )
 
@@ -54,7 +55,7 @@ class ObservationsCfg:
 class RlLocalPlannerPrivilegedInfoEnvCfg(RlLocalPlannerEnvCfg):
     """Configuration for the navigation environment."""
 
-    observations: ObservationsCfg = ObservationsCfg() # type: ignore
+    observations: ObservationsCfg = ObservationsCfg()  # type: ignore
 
     def __post_init__(self):
         super().__post_init__()
@@ -65,8 +66,8 @@ class RlLocalPlannerPrivilegedInfoEnvCfg(RlLocalPlannerEnvCfg):
             spawn=sim_utils.PinholeCameraCfg(
                 focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
             ),
-            width=128,
-            height=128,
+            width=64,
+            height=64,
         )
 
 

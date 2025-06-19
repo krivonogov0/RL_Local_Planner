@@ -5,8 +5,8 @@ from isaaclab.terrains import FlatPatchSamplingCfg
 INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
     size=(8.0, 8.0),
     border_width=20.0,
-    num_rows=10,
-    num_cols=10,
+    num_rows=20,
+    num_cols=20,
     horizontal_scale=0.1,
     vertical_scale=0.1,
     slope_threshold=0.75,
@@ -81,7 +81,7 @@ INDOOR_NAVIGATION_CFG = terrain_gen.TerrainGeneratorCfg(
 
 
 INDOOR_NAVIGATION_PLAY_CFG = terrain_gen.TerrainGeneratorCfg(
-    seed=14,
+    seed=13,
     size=(8.0, 8.0),
     border_width=20.0,
     num_rows=1,

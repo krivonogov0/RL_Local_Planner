@@ -24,7 +24,7 @@ from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor
     INDOOR_NAVIGATION_PLAY_CFG,
 )
 
-USE_RERUN = True
+USE_RERUN = False
 
 SUCCESS_DISTANCE = 0.5
 
@@ -152,12 +152,64 @@ class TerminationsCfg:
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    action_near_obstacles_penalty_curriculum = CurrTerm(
+    # --- Improving safety ---
+    action_near_obstacles_penalty_phase1 = CurrTerm(
         func=mdp.modify_reward_weight,
-        params={"term_name": "action_near_obstacles_penalty", "weight": -0.05, "num_steps": 5000},
+        params={"term_name": "action_near_obstacles_penalty", "weight": -0.03, "num_steps": 25000},
     )
-    position_tracking_curriculum = CurrTerm(
-        func=mdp.modify_reward_weight, params={"term_name": "position_tracking", "weight": 0.35, "num_steps": 5000}
+    action_near_obstacles_penalty_phase2 = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "action_near_obstacles_penalty", "weight": -0.06, "num_steps": 50000},
+    )
+    action_near_obstacles_penalty_phase3 = CurrTerm(
+        func=mdp.modify_reward_weight,
+        params={"term_name": "action_near_obstacles_penalty", "weight": -0.1, "num_steps": 100000},
+    )
+
+    # ------------------------
+
+    undesired_contacts_phase1 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "undesired_contacts", "weight": -5.0, "num_steps": 50000}
+    )
+    undesired_contacts_phase2 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "undesired_contacts", "weight": -7.0, "num_steps": 100000}
+    )
+    undesired_contacts_phase3 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "undesired_contacts", "weight": -10.0, "num_steps": 150000}
+    )
+
+    # --- Reducing the importance of achieving a goal ---
+    position_tracking_phase1 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "position_tracking", "weight": 0.45, "num_steps": 25000}
+    )
+    position_tracking_phase2 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "position_tracking", "weight": 0.35, "num_steps": 50000}
+    )
+    position_tracking_phase3 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "position_tracking", "weight": 0.3, "num_steps": 100000}
+    )
+
+    # ------------------------
+
+    reached_target_phase1 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "reached_target", "weight": 45.0, "num_steps": 75000}
+    )
+    reached_target_phase2 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "reached_target", "weight": 40.0, "num_steps": 100000}
+    )
+    reached_target_phase3 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "reached_target", "weight": 35.0, "num_steps": 150000}
+    )
+
+    # --- Improving quality of movement ---
+    y_action_penalty_phase1 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "y_action_penalty", "weight": -0.3, "num_steps": 75000}
+    )
+    y_action_penalty_phase2 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "y_action_penalty", "weight": -0.5, "num_steps": 100000}
+    )
+    y_action_penalty_phase3 = CurrTerm(
+        func=mdp.modify_reward_weight, params={"term_name": "y_action_penalty", "weight": -1.0, "num_steps": 150000}
     )
 
 

@@ -15,7 +15,7 @@ models:
     network:
       - name: net
         input: concatenate([STATES["pose_command"], STATES["circle_scanner"]])
-        layers: [64, 64]
+        layers: [128, 128]
         activations: elu
     output: ACTIONS
   value:  # see deterministic_model parameters
@@ -24,11 +24,14 @@ models:
       - name: features_extractor
         input: permute(STATES["top_view"], (0, 3, 1, 2))
         layers:
-          - conv2d: {out_channels: 32, kernel_size: 5, stride: 2}
-          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 32, kernel_size: 5, stride: 2}  # 128→64
+          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}   # 64→32
+          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}   # 32→16
+          - conv2d: {out_channels: 128, kernel_size: 3, stride: 2}  # 16→8
           - flatten
-          - linear: 64
-        activations: [relu, relu, null, relu]
+          - linear: 256
+          - linear: 128
+        activations: [relu, relu, relu, relu, null, relu, null]  # Last layer without activation!
       - name: net
         input: concatenate([features_extractor, STATES["pose_command"], STATES["circle_scanner"]])
         layers: [128, 128, 128]
@@ -52,7 +55,7 @@ agent:
   mini_batches: 4
   discount_factor: 0.99
   lambda: 0.95
-  learning_rate: 1.0e-04
+  learning_rate: 2.0e-04
   learning_rate_scheduler: KLAdaptiveLR
   learning_rate_scheduler_kwargs:
     kl_threshold: 0.01
@@ -62,21 +65,21 @@ agent:
   value_preprocessor_kwargs: null
   random_timesteps: 0
   learning_starts: 0
-  grad_norm_clip: 1.0
+  grad_norm_clip: 0.5
   ratio_clip: 0.2
   value_clip: 0.2
   clip_predicted_values: True
-  entropy_loss_scale: 0.005
-  value_loss_scale: 1.0
-  kl_threshold: 0.0
+  entropy_loss_scale: 0.025
+  value_loss_scale: 1.5
+  kl_threshold: 0.02
   rewards_shaper_scale: 1.0
   time_limit_bootstrap: False
   # logging and checkpoint
   experiment:
     directory: "anymal_c_navigation"
     experiment_name: ""
-    write_interval: auto
-    checkpoint_interval: auto
+    write_interval: 2500
+    checkpoint_interval: 2500
 
 
 # Sequential trainer
