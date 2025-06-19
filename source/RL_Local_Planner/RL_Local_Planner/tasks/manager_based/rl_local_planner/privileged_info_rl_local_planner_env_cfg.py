@@ -36,8 +36,16 @@ class ObservationsCfg:
                 "critical_dist": 1.5,
             },
         )
-        top_view = ObsTerm(
+        top_view_depth = ObsTerm(
             func=custom_mdp.top_view_depth,
+            params={
+                "sensor_cfg": SceneEntityCfg(name="tiled_camera"),
+                "use_rerun": USE_RERUN,
+            },
+        )
+
+        top_view_semantic = ObsTerm(
+            func=custom_mdp.top_view_semantic,
             params={
                 "sensor_cfg": SceneEntityCfg(name="tiled_camera"),
                 "use_rerun": USE_RERUN,
@@ -62,7 +70,7 @@ class RlLocalPlannerPrivilegedInfoEnvCfg(RlLocalPlannerEnvCfg):
         self.scene.tiled_camera = TiledCameraCfg(  # make sure to add the --enable_cameras argument!
             prim_path="{ENV_REGEX_NS}/Robot/tiled_camera",
             offset=TiledCameraCfg.OffsetCfg(pos=(0.0, 0.0, 5.0), rot=(0.707, 0.0, 0.707, 0.0), convention="world"),
-            data_types=["depth"],
+            data_types=["depth", "semantic_segmentation"],
             spawn=sim_utils.PinholeCameraCfg(
                 focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
             ),

@@ -155,3 +155,29 @@ def top_view_depth(
         rr_visualizers.depth_top_view_visualizer(frame_name="binary_mask", depth_image=binary_mask)
 
     return binary_mask
+
+
+def top_view_semantic(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    use_rerun: bool = False,
+) -> torch.Tensor:
+    """
+    TBD.
+    """
+    sensor: TiledCamera = env.scene.sensors[sensor_cfg.name]  # type: ignore
+
+    robot_positions = env.scene.articulations["robot"].data.root_pos_w
+    fixed_height = sensor.cfg.offset.pos[2]
+
+    robot_positions_fixed_z = robot_positions.clone()
+    robot_positions_fixed_z[:, 2] = fixed_height
+
+    sensor.set_world_poses(robot_positions_fixed_z)
+
+    sematic_data = sensor.data.output["semantic_segmentation"]  # make sure to set `data_types=["semantic_segmentation"]` in TiledCameraCfg!
+
+    if use_rerun:
+        rr_visualizers.semantic_top_view_visualizer(frame_name="raw", semantic_image=sematic_data)
+
+    return sematic_data
