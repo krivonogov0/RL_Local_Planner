@@ -1,5 +1,6 @@
 import isaaclab.sim as sim_utils
 import RL_Local_Planner.tasks.manager_based.rl_local_planner.mdp as custom_mdp
+from isaaclab.assets import AssetBaseCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -15,7 +16,7 @@ from RL_Local_Planner.tasks.manager_based.rl_local_planner.terrain.config.indoor
     INDOOR_NAVIGATION_PLAY_CFG,
 )
 
-USE_RERUN = False
+USE_RERUN = True
 
 
 @configclass
@@ -36,14 +37,6 @@ class ObservationsCfg:
                 "critical_dist": 1.5,
             },
         )
-        top_view_depth = ObsTerm(
-            func=custom_mdp.top_view_depth,
-            params={
-                "sensor_cfg": SceneEntityCfg(name="tiled_camera"),
-                "use_rerun": USE_RERUN,
-            },
-        )
-
         top_view_semantic = ObsTerm(
             func=custom_mdp.top_view_semantic,
             params={
@@ -77,6 +70,14 @@ class RlLocalPlannerPrivilegedInfoEnvCfg(RlLocalPlannerEnvCfg):
             width=64,
             height=64,
         )
+
+        self.scene.ground = AssetBaseCfg(
+            prim_path="/World/GroundPlane",
+            init_state=AssetBaseCfg.InitialStateCfg(pos=(0.0, 0.0, 0.01)),
+            spawn=sim_utils.GroundPlaneCfg(size=(1000.0, 1000.0)),
+        )
+
+        self.events.add_semantic = EventTerm(func=custom_mdp.add_semantic, mode="startup", params={"prim_path": "/World/ground", "semantic_label": "terrain"})  # type: ignore
 
 
 @configclass

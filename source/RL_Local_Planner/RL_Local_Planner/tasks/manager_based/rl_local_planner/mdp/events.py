@@ -1,5 +1,7 @@
+import isaacsim.core.utils.prims as prim_utils
 import torch
 from isaaclab.envs.manager_based_rl_env import ManagerBasedRLEnv
+from isaacsim.core.utils.semantics import add_update_semantics
 from prettytable import PrettyTable
 
 TERM_COUNTS = {}
@@ -79,3 +81,17 @@ def benchmark(env: ManagerBasedRLEnv, env_ids: torch.Tensor):
             table.add_row([term, count, f"{fraction:.2f}"])
 
         print(table)
+
+
+def add_semantic(env: ManagerBasedRLEnv, env_ids: torch.Tensor, prim_path: str, semantic_label: str):
+    """Adds semantic label to a prim at given path.
+
+    Args:
+        env: RL environment manager.
+        env_ids: Tensor of environment IDs to update.
+        prim_path: Path to the prim in the scene.
+        semantic_label: Semantic label to assign to the prim.
+    """
+    prim = prim_utils.get_prim_at_path(prim_path)
+
+    add_update_semantics(prim=prim, semantic_label=semantic_label)

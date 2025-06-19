@@ -22,7 +22,7 @@ models:
     class: DeterministicMixin
     network:
       - name: features_extractor
-        input: permute(STATES["top_view_depth"], (0, 3, 1, 2))
+        input: permute(STATES["top_view_semantic"], (0, 3, 1, 2))
         layers:
           - conv2d: {out_channels: 32, kernel_size: 5, stride: 2}  # 128→64
           - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}   # 64→32
